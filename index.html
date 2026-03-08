@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Strata Lift App | Pure Grid</title>
+    <title>Strata Lift App | Data Vault</title>
     <style>
         /* BASE STYLES & FAT FINGER OPTIMIZATION */
         html, body { overscroll-behavior-y: none; touch-action: manipulation; }
@@ -13,37 +13,42 @@
         .header h1 { margin: 0; font-size: 1.5rem; font-weight: 900; color: #fff; }
         .header span { color: #f39c12; }
         
-        /* THE STEPPERS (ANCHOR POINT) - NOW BIGGER */
+        /* THE STEPPERS (ANCHOR POINT) */
         .stepper-panel { display: flex; gap: 15px; margin-bottom: 20px; }
         .stepper-group { flex: 1; background: #1a1d27; border: 1px solid #333; border-radius: 8px; padding: 15px; text-align: center; }
         .stepper-label { color: #888; font-size: 0.9rem; font-weight: bold; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
         .stepper-controls { display: flex; align-items: center; justify-content: space-between; }
         .btn-step { background: #333; color: #fff; border: none; border-radius: 8px; width: 60px; height: 60px; font-size: 2.5rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s; }
         .btn-step:active { background: #0cf; color: #000; transform: scale(0.95); }
-        .step-value { font-size: 3rem; font-weight: 900; color: #0cf; width: 80px; text-align: center; }
+        .step-value { font-size: 2.5rem; font-weight: 900; color: #0cf; width: 80px; text-align: center; }
 
-        /* DATA ENTRY BUTTONS */
+        /* DATA ENTRY BUTTONS (IDENTICAL TO ROPE APP) */
         .section-title { color: #888; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .btn-data { background: #1a1d27; border: 2px solid #333; color: #fff; padding: 20px 10px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.1s; }
         .btn-data:active { transform: scale(0.98); }
         
-        /* Toggled States */
         .btn-data.active-clear { background: #28a745; border-color: #28a745; color: #fff; }
         .btn-data.active-warn { background: #f1c40f; border-color: #f1c40f; color: #000; }
         .btn-data.active-danger { background: #d9534f; border-color: #d9534f; color: #fff; }
 
         /* INPUTS */
-        .input-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .input-box { flex: 1; background: #111; border: 2px solid #444; color: #fff; padding: 15px; font-size: 1.2rem; border-radius: 8px; text-align: center; font-weight: bold; }
-        .input-box::placeholder { color: #555; }
         .input-box:focus { border-color: #0cf; outline: none; }
 
-        /* THE D-PAD (RELATIVE NAVIGATION) */
+        /* --- THE DATA VAULT --- */
+        .vault-container { background: #000; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 15px; height: 100px; overflow-y: auto; }
+        .vault-title { font-size: 0.7rem; color: #888; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .vault-log { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 5px 0; font-size: 0.9rem; }
+        .vault-log.newest { color: #0cf; font-weight: bold; }
+        .vault-id { font-weight: bold; width: 60px; }
+        .vault-find { flex: 1; text-align: left; padding-left: 10px; }
+        .vault-flir { color: #d080ff; font-weight: bold; }
+
+        /* THE D-PAD */
         .dpad-container { background: #161922; border: 2px dashed #444; border-radius: 12px; padding: 15px; text-align: center; }
-        .dpad-title { color: #f39c12; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; }
         .dpad-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-width: 400px; margin: 0 auto; }
-        
         .btn-dpad { background: #333; color: #fff; border: none; border-radius: 12px; height: 80px; font-size: 2.5rem; cursor: pointer; box-shadow: 0 6px 0 #111; transition: 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .btn-dpad span { font-size: 0.8rem; font-weight: bold; margin-top: 5px; color: #888; text-transform: uppercase; }
         .btn-dpad:active { transform: translateY(6px); box-shadow: 0 0 0 #111; background: #0cf; color: #000; }
@@ -57,9 +62,8 @@
         .dpad-right { grid-column: 3; }
         .dpad-down { grid-column: 2; }
 
-        /* EXPORT & STATS */
+        /* FOOTER */
         .footer-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #333; }
-        .stat-badge { background: #222; padding: 10px 20px; border-radius: 30px; font-weight: bold; color: #0cf; border: 1px solid #444; }
         .btn-export { background: #8e44ad; color: #fff; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 0 #5a2e7a; }
 
         /* VISUAL FLASH FEEDBACK */
@@ -73,20 +77,14 @@
 
     <div class="header">
         <div>
-            <h1>LIFT APP <span>| PURE GRID</span></h1>
+            <h1>LIFT APP <span>| DATA VAULT</span></h1>
         </div>
         <div id="clock" style="color: #888; font-weight: bold;">00:00</div>
     </div>
 
-    <div class="input-row" style="margin-bottom: 10px;">
-        <input type="text" id="setup-project" class="input-box" style="padding: 10px;" placeholder="Project Name" value="Lift Test">
-        <input type="text" id="setup-tech" class="input-box" style="padding: 10px;" placeholder="Tech Name" value="Tech 1">
-    </div>
-
-    <div class="section-title">📍 1. SET BASKET POSITION (ANCHOR)</div>
     <div class="stepper-panel">
         <div class="stepper-group">
-            <div class="stepper-label">COLUMN / BAY</div>
+            <div class="stepper-label">COLUMN</div>
             <div class="stepper-controls">
                 <button class="btn-step" onclick="changeCol(-1)">-</button>
                 <div class="step-value" id="val-col">A</div>
@@ -103,7 +101,6 @@
         </div>
     </div>
 
-    <div class="section-title">🔍 2. LOG FINDINGS</div>
     <div class="btn-grid">
         <button class="btn-data active-clear" id="btn-clear" onclick="toggleDefect('CLEAR')">✅ CLEAR</button>
         <button class="btn-data" id="btn-moisture" onclick="toggleDefect('MOISTURE')">💧 MOISTURE</button>
@@ -118,8 +115,14 @@
         <input type="number" id="input-flir" class="input-box" style="flex: 1; border-color:#d080ff;" placeholder="📸 FLIR #">
     </div>
 
+    <div class="vault-container">
+        <div class="vault-title">💾 RECENT LOGS (DATA VAULT)</div>
+        <div id="vault-list">
+            <div style="color:#555; font-size:0.8rem; text-align:center; margin-top:10px;">Awaiting first save...</div>
+        </div>
+    </div>
+
     <div class="dpad-container">
-        <div class="dpad-title">🕹️ 3. SAVE & MOVE BASKET</div>
         <div class="dpad-grid">
             <div style="grid-column: 1;"></div>
             <button class="btn-dpad dpad-up" onclick="saveAndMove('UP')">⬆️<span>Floor Up</span></button>
@@ -136,16 +139,27 @@
     </div>
 
     <div class="footer-bar">
-        <div class="stat-badge">LOGGED: <span id="log-count" style="color:#fff; font-size:1.2rem;">0</span></div>
-        <button class="btn-export" onclick="exportData()">📥 EXPORT CSV</button>
+        <button class="btn-export" onclick="exportData()">📥 EXPORT CSV (<span id="log-count">0</span>)</button>
     </div>
 
     <script>
+        // --- INFINITE COLUMN LOGIC ---
+        // Converts 0->A, 1->B, 26->AA. Handles Negatives: -1-> -A, -2-> -B.
+        function getColumnName(index) {
+            if (index < 0) return "-" + getColumnName(Math.abs(index) - 1);
+            let colName = '';
+            let temp = index;
+            while (temp >= 0) {
+                colName = String.fromCharCode(65 + (temp % 26)) + colName;
+                temp = Math.floor(temp / 26) - 1;
+            }
+            return colName;
+        }
+
         // --- STATE VARIABLES ---
-        const columnsList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         let state = {
-            colIdx: 0,       // 0 = A
-            floor: 1,        // Starts at ground
+            colIdx: 0,       // Starts at 0 (A)
+            floor: 1,        
             findings: ["CLEAR"],
             meterProved: false
         };
@@ -159,14 +173,17 @@
 
         // --- UI UPDATERS ---
         function updateUI() {
-            document.getElementById('val-col').innerText = columnsList[state.colIdx];
+            // Update Steppers
+            document.getElementById('val-col').innerText = getColumnName(state.colIdx);
             document.getElementById('val-floor').innerText = state.floor;
             
+            // Update Findings Buttons
             document.getElementById('btn-clear').className = `btn-data ${state.findings.includes('CLEAR') ? 'active-clear' : ''}`;
             document.getElementById('btn-moisture').className = `btn-data ${state.findings.includes('MOISTURE') ? 'active-warn' : ''}`;
             document.getElementById('btn-spall').className = `btn-data ${state.findings.includes('SPALLING') ? 'active-danger' : ''}`;
             document.getElementById('btn-sealant').className = `btn-data ${state.findings.includes('SEALANT FAIL') ? 'active-danger' : ''}`;
 
+            // Update Meter
             const meterBtn = document.getElementById('btn-meter');
             const meterVal = document.getElementById('meter-val');
             if(state.meterProved) {
@@ -174,21 +191,43 @@
             } else {
                 meterBtn.classList.remove('active-warn'); meterVal.innerText = "NO"; meterVal.style.color = "#888";
             }
+            
+            // Update Export Count
             document.getElementById('log-count').innerText = logs.length;
+        }
+
+        function updateVault() {
+            const vaultList = document.getElementById('vault-list');
+            vaultList.innerHTML = ''; // Clear current list
+            
+            // Get the 5 most recent logs, reverse them so newest is on top
+            const recentLogs = logs.slice(-5).reverse();
+            
+            recentLogs.forEach((log, index) => {
+                const div = document.createElement('div');
+                div.className = `vault-log ${index === 0 ? 'newest' : ''}`;
+                
+                const emoji = log.findings.includes('CLEAR') ? '✅' : '🔴';
+                const flirText = log.flir !== '--' ? ` [${log.flir}]` : '';
+
+                div.innerHTML = `
+                    <span class="vault-id">${log.id}</span>
+                    <span class="vault-find">${emoji} ${log.findings} <span class="vault-flir">${flirText}</span></span>
+                    <span style="color:#555; font-size:0.8rem;">${log.time}</span>
+                `;
+                vaultList.appendChild(div);
+            });
         }
 
         // --- STEPPER CONTROLS ---
         function changeCol(dir) {
-            state.colIdx += dir;
-            if (state.colIdx < 0) state.colIdx = 0;
-            if (state.colIdx > 25) state.colIdx = 25;
+            state.colIdx += dir; // No limits! Can go to -1, -2, etc.
             updateUI();
         }
 
         function changeFloor(dir) {
             state.floor += dir;
-            if (state.floor < 1) state.floor = 1;
-            updateUI();
+            updateUI(); // Removed the floor < 1 limit in case they have underground basement levels (e.g., Floor 0, -1)
         }
 
         // --- DATA TOGGLES ---
@@ -213,31 +252,35 @@
             updateUI();
         }
 
-        // --- THE MAGIC D-PAD LOGIC (1-to-1 Movement) ---
+        // --- THE MAGIC D-PAD LOGIC ---
         function saveAndMove(direction) {
-            const project = document.getElementById('setup-project').value || "Unknown";
-            const tech = document.getElementById('setup-tech').value || "Unknown";
             const date = new Date().toLocaleDateString();
             const time = new Date().toTimeString().split(' ')[0].substring(0, 5);
             
-            const col = columnsList[state.colIdx];
+            const col = getColumnName(state.colIdx);
             const flr = state.floor;
-            const windowID = `${col}-${flr}`; // NO PANE INCLUDED
+            const windowID = `${col}-${flr}`; 
             
             let flirInput = document.getElementById('input-flir').value;
             let flirName = flirInput ? `FLIR${flirInput.padStart(4, '0')}` : "--";
             const finds = state.findings.join(' | ');
             const proved = state.meterProved ? "YES" : "NO";
 
-            logs.push({ project, date, tech, id: windowID, flir: flirName, findings: finds, proved, time });
+            // Push to array (Hardcoded Project/Tech for pure speed, can add back to setup if needed)
+            logs.push({ project: "Lift Drop", date, tech: "Operator", id: windowID, flir: flirName, findings: finds, proved, time });
 
+            // Visual Flash
             const flash = document.getElementById('flash-overlay');
             flash.classList.add('flash-active');
             setTimeout(() => flash.classList.remove('flash-active'), 200);
 
+            // Reset Inputs
             document.getElementById('input-flir').value = '';
             state.findings = ['CLEAR'];
             state.meterProved = false;
+
+            // Update Vault Live
+            updateVault();
 
             // Direct 1-to-1 Physical Movement
             if (direction === 'UP') changeFloor(1);
@@ -256,10 +299,8 @@
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            const projName = document.getElementById('setup-project').value.replace(/\s+/g, '_');
-            link.setAttribute("href", url);
-            link.setAttribute("download", `LIFT_Log_${projName}.csv`);
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `LIFT_Log_Vault.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
