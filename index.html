@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Strata Field App | Lift UI</title>
+    <style>
+        /* BASE STYLES & FAT FINGER OPTIMIZATION */
+        html, body { overscroll-behavior-y: none; touch-action: manipulation; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #0f111a; color: #fff; margin: 0; padding: 15px; user-select: none; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0cf; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { margin: 0; font-size: 1.5rem; font-weight: 900; color: #fff; }
+        .header span { color: #f39c12; }
+        
+        /* THE STEPPERS (ANCHOR POINT) */
+        .stepper-panel { display: flex; gap: 10px; margin-bottom: 20px; }
+        .stepper-group { flex: 1; background: #1a1d27; border: 1px solid #333; border-radius: 8px; padding: 10px; text-align: center; }
+        .stepper-label { color: #888; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+        .stepper-controls { display: flex; align-items: center; justify-content: space-between; }
+        .btn-step { background: #333; color: #fff; border: none; border-radius: 6px; width: 50px; height: 50px; font-size: 2rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.1s; }
+        .btn-step:active { background: #0cf; color: #000; transform: scale(0.95); }
+        .step-value { font-size: 2rem; font-weight: 900; color: #0cf; width: 60px; text-align: center; }
+
+        /* DATA ENTRY BUTTONS */
+        .section-title { color: #888; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-data { background: #1a1d27; border: 2px solid #333; color: #fff; padding: 20px 10px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.1s; }
+        .btn-data:active { transform: scale(0.98); }
+        
+        /* Toggled States */
+        .btn-data.active-clear { background: #28a745; border-color: #28a745; color: #fff; }
+        .btn-data.active-warn { background: #f1c40f; border-color: #f1c40f; color: #000; }
+        .btn-data.active-danger { background: #d9534f; border-color: #d9534f; color: #fff; }
+
+        /* INPUTS */
+        .input-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .input-box { flex: 1; background: #111; border: 2px solid #444; color: #fff; padding: 15px; font-size: 1.2rem; border-radius: 8px; text-align: center; font-weight: bold; }
+        .input-box::placeholder { color: #555; }
+        .input-box:focus { border-color: #0cf; outline: none; }
+
+        /* THE D-PAD (RELATIVE NAVIGATION) */
+        .dpad-container { background: #161922; border: 2px dashed #444; border-radius: 12px; padding: 15px; text-align: center; }
+        .dpad-title { color: #f39c12; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; }
+        .dpad-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-width: 400px; margin: 0 auto; }
+        
+        .btn-dpad { background: #333; color: #fff; border: none; border-radius: 12px; height: 70px; font-size: 2rem; cursor: pointer; box-shadow: 0 6px 0 #111; transition: 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .btn-dpad span { font-size: 0.7rem; font-weight: bold; margin-top: 5px; color: #888; text-transform: uppercase; }
+        .btn-dpad:active { transform: translateY(6px); box-shadow: 0 0 0 #111; background: #0cf; color: #000; }
+        .btn-dpad:active span { color: #000; }
+        
+        .dpad-up { grid-column: 2; }
+        .dpad-left { grid-column: 1; }
+        .dpad-save { grid-column: 2; background: #0cf; color: #000; box-shadow: 0 6px 0 #007799; }
+        .dpad-save span { color: #000; }
+        .dpad-save:active { background: #fff; }
+        .dpad-right { grid-column: 3; }
+        .dpad-down { grid-column: 2; }
+
+        /* EXPORT & STATS */
+        .footer-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #333; }
+        .stat-badge { background: #222; padding: 10px 20px; border-radius: 30px; font-weight: bold; color: #0cf; border: 1px solid #444; }
+        .btn-export { background: #8e44ad; color: #fff; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 0 #5a2e7a; }
+        .btn-export:active { transform: translateY(4px); box-shadow: none; }
+
+        /* VISUAL FLASH FEEDBACK */
+        #flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(40, 167, 69, 0.4); z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+        .flash-active { opacity: 1 !important; }
+    </style>
+</head>
+<body>
+
+    <div id="flash-overlay"></div>
+
+    <div class="header">
+        <div>
+            <h1>FIELD APP <span>| MEWP MODE</span></h1>
+        </div>
+        <div id="clock" style="color: #888; font-weight: bold;">00:00</div>
+    </div>
+
+    <div class="input-row" style="margin-bottom: 10px;">
+        <input type="text" id="setup-project" class="input-box" style="padding: 10px;" placeholder="Project Name (e.g. Marina Towers)" value="Dry Run Test">
+        <input type="text" id="setup-tech" class="input-box" style="padding: 10px;" placeholder="Tech Name (e.g. John D.)" value="Tech 1">
+    </div>
+
+    <div class="section-title">📍 1. SET BASKET POSITION (ANCHOR)</div>
+    <div class="stepper-panel">
+        <div class="stepper-group">
+            <div class="stepper-label">COLUMN / BAY</div>
+            <div class="stepper-controls">
+                <button class="btn-step" onclick="changeCol(-1)">-</button>
+                <div class="step-value" id="val-col">A</div>
+                <button class="btn-step" onclick="changeCol(1)">+</button>
+            </div>
+        </div>
+        <div class="stepper-group">
+            <div class="stepper-label">FLOOR</div>
+            <div class="stepper-controls">
+                <button class="btn-step" onclick="changeFloor(-1)">-</button>
+                <div class="step-value" id="val-floor" style="color:#fff;">1</div>
+                <button class="btn-step" onclick="changeFloor(1)">+</button>
+            </div>
+        </div>
+        <div class="stepper-group">
+            <div class="stepper-label">PANE</div>
+            <div class="stepper-controls">
+                <button class="btn-step" onclick="changePane(-1)">-</button>
+                <div class="step-value" id="val-pane" style="color:#f39c12; font-size:1.5rem;">C</div>
+                <button class="btn-step" onclick="changePane(1)">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">🔍 2. LOG FINDINGS</div>
+    <div class="btn-grid">
+        <button class="btn-data active-clear" id="btn-clear" onclick="toggleDefect('CLEAR')">✅ CLEAR</button>
+        <button class="btn-data" id="btn-moisture" onclick="toggleDefect('MOISTURE')">💧 MOISTURE</button>
+        <button class="btn-data" id="btn-spall" onclick="toggleDefect('SPALLING')">🧱 SPALLING</button>
+        <button class="btn-data" id="btn-sealant" onclick="toggleDefect('SEALANT FAIL')">🔗 SEALANT FAIL</button>
+    </div>
+
+    <div class="input-row">
+        <button class="btn-data" id="btn-meter" style="flex: 1; padding: 15px;" onclick="toggleMeter()">
+            🌡️ METER PROVED: <span id="meter-val" style="color:#888;">NO</span>
+        </button>
+        <input type="number" id="input-flir" class="input-box" style="flex: 1; border-color:#d080ff;" placeholder="📸 FLIR # (e.g. 45)">
+    </div>
+
+    <div class="dpad-container">
+        <div class="dpad-title">🕹️ 3. SAVE & MOVE BASKET</div>
+        <div class="dpad-grid">
+            <div style="grid-column: 1;"></div>
+            <button class="btn-dpad dpad-up" onclick="saveAndMove('UP')">⬆️<span>Floor Up</span></button>
+            <div style="grid-column: 3;"></div>
+            
+            <button class="btn-dpad dpad-left" onclick="saveAndMove('LEFT')">⬅️<span>Pane Left</span></button>
+            <button class="btn-dpad dpad-save" onclick="saveAndMove('STAY')">💾<span>Save Only</span></button>
+            <button class="btn-dpad dpad-right" onclick="saveAndMove('RIGHT')">➡️<span>Pane Right</span></button>
+            
+            <div style="grid-column: 1;"></div>
+            <button class="btn-dpad dpad-down" onclick="saveAndMove('DOWN')">⬇️<span>Floor Down</span></button>
+            <div style="grid-column: 3;"></div>
+        </div>
+    </div>
+
+    <div class="footer-bar">
+        <div class="stat-badge">WINDOWS LOGGED: <span id="log-count" style="color:#fff; font-size:1.2rem;">0</span></div>
+        <button class="btn-export" onclick="exportData()">📥 EXPORT CSV</button>
+    </div>
+
+    <script>
+        // --- STATE VARIABLES ---
+        const columnsList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        let state = {
+            colIdx: 0,       // 0 = A
+            floor: 1,        // Starts at ground
+            paneIdx: 1,      // 0=L, 1=C, 2=R
+            findings: ["CLEAR"],
+            meterProved: false
+        };
+        const panesList = ["L", "C", "R"];
+        let logs = []; // Holds all saved data
+
+        // --- CLOCK ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toTimeString().split(' ')[0].substring(0, 5);
+        }, 1000);
+
+        // --- UI UPDATERS ---
+        function updateUI() {
+            document.getElementById('val-col').innerText = columnsList[state.colIdx];
+            document.getElementById('val-floor').innerText = state.floor;
+            document.getElementById('val-pane').innerText = panesList[state.paneIdx];
+            
+            // Handle Findings Buttons
+            document.getElementById('btn-clear').className = `btn-data ${state.findings.includes('CLEAR') ? 'active-clear' : ''}`;
+            document.getElementById('btn-moisture').className = `btn-data ${state.findings.includes('MOISTURE') ? 'active-warn' : ''}`;
+            document.getElementById('btn-spall').className = `btn-data ${state.findings.includes('SPALLING') ? 'active-danger' : ''}`;
+            document.getElementById('btn-sealant').className = `btn-data ${state.findings.includes('SEALANT FAIL') ? 'active-danger' : ''}`;
+
+            // Handle Meter
+            const meterBtn = document.getElementById('btn-meter');
+            const meterVal = document.getElementById('meter-val');
+            if(state.meterProved) {
+                meterBtn.classList.add('active-warn');
+                meterVal.innerText = "YES";
+                meterVal.style.color = "#000";
+            } else {
+                meterBtn.classList.remove('active-warn');
+                meterVal.innerText = "NO";
+                meterVal.style.color = "#888";
+            }
+
+            document.getElementById('log-count').innerText = logs.length;
+        }
+
+        // --- STEPPER CONTROLS ---
+        function changeCol(dir) {
+            state.colIdx += dir;
+            if (state.colIdx < 0) state.colIdx = 0;
+            if (state.colIdx > 25) state.colIdx = 25;
+            updateUI();
+        }
+
+        function changeFloor(dir) {
+            state.floor += dir;
+            if (state.floor < 1) state.floor = 1;
+            updateUI();
+        }
+
+        function changePane(dir) {
+            state.paneIdx += dir;
+            if (state.paneIdx < 0) {
+                state.paneIdx = 2; // Wrap to Right
+                changeCol(-1);     // Move column left
+            } else if (state.paneIdx > 2) {
+                state.paneIdx = 0; // Wrap to Left
+                changeCol(1);      // Move column right
+            } else {
+                updateUI();
+            }
+        }
+
+        // --- DATA TOGGLES ---
+        function toggleDefect(defectName) {
+            if (defectName === 'CLEAR') {
+                state.findings = ['CLEAR'];
+                state.meterProved = false;
+            } else {
+                // Remove CLEAR if adding a defect
+                state.findings = state.findings.filter(f => f !== 'CLEAR');
+                
+                if (state.findings.includes(defectName)) {
+                    state.findings = state.findings.filter(f => f !== defectName); // Toggle off
+                } else {
+                    state.findings.push(defectName); // Toggle on
+                }
+                
+                // If nothing is left, revert to CLEAR
+                if (state.findings.length === 0) state.findings = ['CLEAR'];
+            }
+            updateUI();
+        }
+
+        function toggleMeter() {
+            state.meterProved = !state.meterProved;
+            updateUI();
+        }
+
+        // --- THE MAGIC D-PAD LOGIC ---
+        function saveAndMove(direction) {
+            // 1. Gather Data
+            const project = document.getElementById('setup-project').value || "Unknown";
+            const tech = document.getElementById('setup-tech').value || "Unknown";
+            const date = new Date().toLocaleDateString();
+            const time = new Date().toTimeString().split(' ')[0].substring(0, 5);
+            
+            const col = columnsList[state.colIdx];
+            const flr = state.floor;
+            const pane = panesList[state.paneIdx];
+            const windowID = `${col}-${flr}-${pane}`; // Matches Command Center Format!
+            
+            let flirInput = document.getElementById('input-flir').value;
+            let flirName = flirInput ? `FLIR${flirInput.padStart(4, '0')}` : "--";
+            
+            const finds = state.findings.join(' | ');
+            const proved = state.meterProved ? "YES" : "NO";
+
+            // 2. Save to Array
+            logs.push({ project, date, tech, id: windowID, flir: flirName, findings: finds, proved, time });
+
+            // 3. Visual Flash Feedback
+            const flash = document.getElementById('flash-overlay');
+            flash.classList.add('flash-active');
+            setTimeout(() => flash.classList.remove('flash-active'), 200);
+
+            // 4. Reset Inputs for the next window
+            document.getElementById('input-flir').value = '';
+            state.findings = ['CLEAR'];
+            state.meterProved = false;
+
+            // 5. Execute Physical Movement based on D-Pad
+            if (direction === 'UP') {
+                changeFloor(1);
+            } else if (direction === 'DOWN') {
+                changeFloor(-1);
+            } else if (direction === 'LEFT') {
+                changePane(-1);
+            } else if (direction === 'RIGHT') {
+                changePane(1);
+            } else if (direction === 'STAY') {
+                updateUI(); // Just reset UI, don't move
+            }
+        }
+
+        // --- EXPORT MASTER CSV ---
+        function exportData() {
+            if (logs.length === 0) {
+                alert("No data to export!");
+                return;
+            }
+
+            // Headers exactly match what the Command Center CSV parser expects
+            let csvContent = "Project, Date, Tech, ID, FLIR, Findings, Proved, Time\n";
+            
+            logs.forEach(row => {
+                csvContent += `"${row.project}","${row.date}","${row.tech}","${row.id}","${row.flir}","${row.findings}","${row.proved}","${row.time}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            const projName = document.getElementById('setup-project').value.replace(/\s+/g, '_');
+            link.setAttribute("href", url);
+            link.setAttribute("download", `MEWP_Log_${projName}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initialize UI on load
+        updateUI();
+    </script>
+</body>
+</html>
